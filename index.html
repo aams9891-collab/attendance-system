@@ -62,7 +62,7 @@
     </div>
 
     <script>
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbys8DWmhmSbl6KD7S_KS-NHvCaQuMntCm9EwD2CTrGd4WvPwnPCXhjePbgQBwwCyeVW/exec";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/1D4kOFY25an0tEJXBxcw-WY-4a-SiVDF9ibTGW-cnxKzKf2A1h0m-o2A1eyq8yp5/exec";
     const ADMIN_PASSWORD = "1234";
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -133,3 +133,52 @@
         });
 
         // تسجيل الدخول أو الخروج
+        function handleRegister(type) {
+            if (empSelect.options.length === 0 || !empSelect.value) {
+                alert('يرجى اختيار اسم الموظفة أولاً');
+                return;
+            }
+            
+            const name = empSelect.value;
+            const today = new Date().toLocaleDateString('ar-SA');
+            const now = new Date().toLocaleString('ar-SA');
+            const recordKey = 'attendance_' + name + '' + type + '' + today;
+
+            if (localStorage.getItem(recordKey)) {
+                alert('عذراً، الموظفة (' + name + ') قامت بعمل (' + type + ') اليوم بالفعل!');
+                return;
+            }
+
+            localStorage.setItem(recordKey, "true");
+
+            if (GOOGLE_SCRIPT_URL) {
+                fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ employee: name, type: type, time: now })
+                }).catch(function(err) { console.error(err); });
+            }
+
+            if (logTable.rows[0] && logTable.rows[0].cells.length === 1) { 
+                logTable.innerHTML = ''; 
+            }
+
+            const rowClass = type === 'تسجيل دخول' ? 'text-emerald-400' : 'text-rose-400';
+            const rowHtml = '<tr class="hover:bg-slate-700/30 transition border-b border-slate-700/50">' +
+                '<td class="py-3 font-bold text-white">' + name + '</td>' +
+                '<td class="py-3 font-semibold ' + rowClass + '">' + type + '</td>' +
+                '<td class="py-3 text-slate-300">' + now + '</td>' +
+                '<td class="py-3"><span class="bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-lg text-xs">تم الحفظ</span></td>' +
+            '</tr>';
+
+            logTable.innerHTML = rowHtml + logTable.innerHTML;
+            alert('تم ' + type + ' لـ ' + name + ' بنجاح!');
+        }
+
+        inBtn.addEventListener('click', function() { handleRegister('تسجيل دخول'); });
+        outBtn.addEventListener('click', function() { handleRegister('تسجيل خروج'); });
+    });
+    </script>
+</body>
+</html>
