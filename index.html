@@ -60,7 +60,8 @@
     </div>
 
     <script>
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyl_4g0qEo_VhKOD4YhiGCtJ0yckOfNR1u1k3FgLi5jQtROpV48mIbksmFEjlIG2DBX/exec";
+    // ضعي رابط الـ Web App الذي ينتهي بـ /exec هنا
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyl_4g0qEo_VhK0D4YhiGCtJ0yck0fNR1u1k3FgLi5jQtROpV48mlbksmFEjIlG2DBX/exec";
     const ADMIN_PASSWORD = "1234";
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -136,7 +137,7 @@
 
             localStorage.setItem(recordKey, "true");
 
-            // إرسال البيانات المباشر بدون محاولة تحويل أو إرسال GET فرعي
+            // إرسال البيانات المباشر لمنع تحويلات echo والخطأ 403
             if (GOOGLE_SCRIPT_URL) {
                 fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
