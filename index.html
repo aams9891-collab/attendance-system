@@ -62,7 +62,7 @@
     </div>
 
     <script>
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyoYHmjTlkreVLlspse1paLZFBAkCSnVs--nvIP85B-iFEDLjCXyf6OEBjhYSb3eu_6/exec";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzIGUneH9qQoYIW4FZdZgcn9iAQig3PbvzBpvxFjks85vBJ4wbVPaPo_pjlwQBFwAdJ/exec";
     const ADMIN_PASSWORD = "1234";
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -141,7 +141,13 @@
             
             const name = empSelect.value;
             const today = new Date().toLocaleDateString('ar-SA');
-            const now = new Date().toLocaleString('ar-SA');
+            
+            // صياغة الوقت والتاريخ الحالي بتوقيت الجهاز المحلي بشكل صريح (مثال: 2026/10/05 - 08:32 م)
+            const nowObj = new Date();
+            const dateStr = nowObj.toLocaleDateString('en-CA'); // YYYY-MM-DD
+            const timeStr = nowObj.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+            const fullDateTimeStr = dateStr + ' ' + timeStr;
+
             const recordKey = 'attendance_' + name + '' + type + '' + today;
 
             if (localStorage.getItem(recordKey)) {
@@ -156,7 +162,7 @@
                     method: 'POST',
                     mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ employee: name, type: type, time: now })
+                    body: JSON.stringify({ employee: name, type: type, time: fullDateTimeStr })
                 }).catch(function(err) { console.error(err); });
             }
 
@@ -168,7 +174,7 @@
             const rowHtml = '<tr class="hover:bg-slate-700/30 transition border-b border-slate-700/50">' +
                 '<td class="py-3 font-bold text-white">' + name + '</td>' +
                 '<td class="py-3 font-semibold ' + rowClass + '">' + type + '</td>' +
-                '<td class="py-3 text-slate-300">' + now + '</td>' +
+                '<td class="py-3 text-slate-300">' + fullDateTimeStr + '</td>' +
                 '<td class="py-3"><span class="bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-lg text-xs">تم الحفظ</span></td>' +
             '</tr>';
 
