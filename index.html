@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام الحضور والانصراف - الصالون</title>
+    <title>نظام الحضور والانصراف</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-900 text-white min-h-screen flex items-center justify-center p-4">
@@ -11,11 +11,10 @@
     <div class="bg-slate-800 p-6 rounded-2xl shadow-xl w-full max-w-md border border-slate-700">
         <h1 class="text-2xl font-bold text-center mb-6 text-amber-400">نظام الحضور والانصراف</h1>
 
-        <!-- إدارة الموظفات -->
         <div class="mb-5 bg-slate-700/50 p-4 rounded-xl border border-slate-600">
-            <label class="block text-slate-300 mb-2 font-bold text-sm">إدارة الموظفات (خاص بالإدارة):</label>
+            <label class="block text-slate-300 mb-2 font-bold text-sm">إدارة الموظفات:</label>
             <div class="flex gap-2 mb-3">
-                <input type="text" id="newEmpInput" placeholder="اكتبي اسم الموظفة..." class="flex-1 p-2.5 rounded-lg bg-slate-800 text-white border border-slate-600 text-sm text-right">
+                <input type="text" id="newEmpInput" placeholder="اسم الموظفة..." class="flex-1 p-2.5 rounded-lg bg-slate-800 text-white border border-slate-600 text-sm text-right">
                 <button type="button" id="addBtn" class="bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold px-4 py-2 rounded-lg text-sm">إضافة</button>
             </div>
 
@@ -30,17 +29,11 @@
             </div>
         </div>
 
-        <!-- أزرار التسجيل -->
         <div class="grid grid-cols-2 gap-4 mb-6">
-            <button type="button" id="inBtn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl transition shadow-lg active:scale-95">
-                تسجيل دخول
-            </button>
-            <button type="button" id="outBtn" class="bg-rose-600 hover:bg-rose-500 text-white font-bold py-3 rounded-xl transition shadow-lg active:scale-95">
-                تسجيل خروج
-            </button>
+            <button type="button" id="inBtn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl transition shadow-lg active:scale-95">تسجيل دخول</button>
+            <button type="button" id="outBtn" class="bg-rose-600 hover:bg-rose-500 text-white font-bold py-3 rounded-xl transition shadow-lg active:scale-95">تسجيل خروج</button>
         </div>
 
-        <!-- جدول السجلات -->
         <div class="overflow-x-auto">
             <table class="w-full text-right text-sm">
                 <thead>
@@ -51,16 +44,15 @@
                     </tr>
                 </thead>
                 <tbody id="logTable">
-                    <tr>
-                        <td colspan="3" class="py-4 text-center text-slate-500">لا توجد سجلات جديدة</td>
-                    </tr>
+                    <tr><td colspan="3" class="py-4 text-center text-slate-500">لا توجد سجلات جديدة</td></tr>
                 </tbody>
             </table>
         </div>
     </div>
 
     <script>
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyl_4g0qEo_VhK0D4YhiGCtJ0yck0fNR1u1k3FgLi5jQtROpV48mlbksmFEjIlG2DBX/exec";    const ADMIN_PASSWORD = "1234";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyl_4g0qEo_VhK0D4YhiGCtJ0yck0fNR1u1k3FgLi5jQtROpV48mlbksmFEjIlG2DBX/exec";
+    const ADMIN_PASSWORD = "1234";
 
     document.addEventListener('DOMContentLoaded', function() {
         const empSelect = document.getElementById('empSelect');
@@ -72,92 +64,58 @@ const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyl_4g0qEo_Vh
         const outBtn = document.getElementById('outBtn');
         const logTable = document.getElementById('logTable');
 
-        // إضافة موظفة
         addBtn.onclick = function() {
-            const pass = prompt('رمز المرور بالإدارة:');
-            if (pass !== ADMIN_PASSWORD) {
-                if (pass !== null) alert('رمز المرور غير صحيح!');
-                return;
-            }
+            if (prompt('رمز المرور:') !== ADMIN_PASSWORD) return alert('خطأ!');
             const name = newEmpInput.value.trim();
-            if (!name) return alert('اكتبي اسم الموظفة أولاً');
+            if (!name) return;
             const opt = document.createElement('option');
-            opt.value = name;
-            opt.textContent = name;
-            empSelect.appendChild(opt);
-            empSelect.value = name;
+            opt.value = name; opt.textContent = name;
+            empSelect.appendChild(opt); empSelect.value = name;
             newEmpInput.value = '';
-            alert('تمت الإضافة: ' + name);
         };
 
-        // حذف موظفة
         delBtn.onclick = function() {
             if (empSelect.options.length === 0) return;
-            const pass = prompt('رمز المرور بالإدارة:');
-            if (pass !== ADMIN_PASSWORD) {
-                if (pass !== null) alert('رمز المرور غير صحيح!');
-                return;
-            }
-            if (confirm('حذف الموظفة (' + empSelect.value + ')؟')) {
-                empSelect.remove(empSelect.selectedIndex);
-            }
+            if (prompt('رمز المرور:') !== ADMIN_PASSWORD) return alert('خطأ!');
+            empSelect.remove(empSelect.selectedIndex);
         };
 
-        // إلغاء حظر التسجيل لليوم
         resetBtn.onclick = function() {
             if (!empSelect.value) return;
-            const pass = prompt('رمز المرور بالإدارة:');
-            if (pass !== ADMIN_PASSWORD) {
-                if (pass !== null) alert('رمز المرور غير صحيح!');
-                return;
-            }
-            const name = empSelect.value;
+            if (prompt('رمز المرور:') !== ADMIN_PASSWORD) return alert('خطأ!');
             const today = new Date().toISOString().slice(0, 10);
-            localStorage.removeItem('att_' + name + 'تسجيل دخول' + today);
-            localStorage.removeItem('att_' + name + 'تسجيل خروج' + today);
-            alert('تم إلغاء الحظر لـ (' + name + ') لليوم!');
+            localStorage.removeItem('att_' + empSelect.value + 'تسجيل دخول' + today);
+            localStorage.removeItem('att_' + empSelect.value + 'تسجيل خروج' + today);
+            alert('تم إلغاء الحظر!');
         };
 
-        // تسجيل الحضور أو الانصراف
         function register(type) {
             const name = empSelect.value;
-            if (!name) return alert('اختاري الموظفة أولاً');
+            if (!name) return alert('اختاري الموظفة');
 
             const now = new Date();
             const todayStr = now.toISOString().slice(0, 10);
             const recordKey = 'att_' + name + '' + type + '' + todayStr;
 
             if (localStorage.getItem(recordKey)) {
-                return alert('الموظفة (' + name + ') قامت بـ (' + type + ') اليوم بالفعل!');
+                return alert('تم التسجيل اليوم بالفعل!');
             }
 
-            const fullDateTime = now.toLocaleDateString('ar-SA') + ' - ' + now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-
+            const timeStr = now.toLocaleDateString('ar-SA') + ' - ' + now.toLocaleTimeString('ar-SA');
             localStorage.setItem(recordKey, "true");
 
-            // إرسال البيانات المباشر لمنع تحويلات echo والخطأ 403
-            if (GOOGLE_SCRIPT_URL) {
-                fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ employee: name, type: type, time: fullDateTime })
-                }).catch(function(err) { console.log(err); });
-            }
+            // إرسال مباشر بدون إعادات توجيه أو echo
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ employee: name, type: type, time: timeStr })
+            });
 
-            if (logTable.rows[0] && logTable.rows[0].cells.length === 1) {
-                logTable.innerHTML = '';
-            }
-
+            if (logTable.rows[0] && logTable.rows[0].cells.length === 1) logTable.innerHTML = '';
             const rowClass = type === 'تسجيل دخول' ? 'text-emerald-400' : 'text-rose-400';
-            const rowHtml = '<tr class="border-b border-slate-700/50">' +
-                '<td class="py-3 font-bold text-white">' + name + '</td>' +
-                '<td class="py-3 font-semibold ' + rowClass + '">' + type + '</td>' +
-                '<td class="py-3 text-slate-300">' + fullDateTime + '</td>' +
-            '</tr>';
-
-            logTable.innerHTML = rowHtml + logTable.innerHTML;
-            alert('تم ' + type + ' لـ ' + name + ' بنجاح!');
+            logTable.innerHTML = '<tr class="border-b border-slate-700/50"><td class="py-3 font-bold text-white">' + name + '</td><td class="py-3 ' + rowClass + '">' + type + '</td><td class="py-3 text-slate-300">' + timeStr + '</td></tr>' + logTable.innerHTML;
+            alert('تم ' + type + ' بنجاح!');
         }
 
         inBtn.onclick = function() { register('تسجيل دخول'); };
