@@ -19,15 +19,14 @@
                 <button type="button" id="addBtn" class="bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold px-4 py-2 rounded-lg text-sm transition">إضافة</button>
             </div>
 
-            <!-- قائمة اختيار الموظفة مع أزرار التحكم -->
             <div class="flex gap-2">
                 <select id="empSelect" class="flex-1 p-2.5 rounded-lg bg-slate-800 text-white border border-slate-600 text-sm focus:outline-none focus:border-amber-400">
                     <option value="سارة">سارة</option>
                     <option value="نورة">نورة</option>
                     <option value="أمل">أمل</option>
                 </select>
-                <button type="button" id="delBtn" class="bg-rose-600 hover:bg-rose-500 text-white font-semibold px-3 py-2 rounded-lg text-xs transition">حذف الاسم</button>
-                <button type="button" id="resetBtn" class="bg-amber-600 hover:bg-amber-500 text-white font-semibold px-3 py-2 rounded-lg text-xs transition" title="إلغاء حظر التسجيل للموظفة المختارة اليوم">إلغاء حظر التسجيل</button>
+                <button type="button" id="delBtn" class="bg-rose-600 hover:bg-rose-500 text-white font-semibold px-3 py-2 rounded-lg text-xs transition">حذف</button>
+                <button type="button" id="resetBtn" class="bg-amber-600 hover:bg-amber-500 text-white font-semibold px-3 py-2 rounded-lg text-xs transition">إلغاء الحظر</button>
             </div>
         </div>
 
@@ -48,21 +47,29 @@
                     <tr class="text-slate-400 border-b border-slate-700">
                         <th class="py-2">الموظفة</th>
                         <th class="py-2">النوع</th>
-                        <th class="py-2">الوقت</th>
-                        <th class="py-2">الحالة</th>
+                        <th class="py-2">الوقت والتاريخ</th>
                     </tr>
                 </thead>
                 <tbody id="logTable">
                     <tr>
-                        <td colspan="4" class="py-4 text-center text-slate-500">لا توجد سجلات اليوم</td>
+                        <td colspan="3" class="py-4 text-center text-slate-500">لا توجد سجلات جديدة</td>
                     </tr>
                 </tbody>
             </table>
         </div>
     </div>
 
+    <!-- نموذج إرسال خفي لضمان وصول البيانات لـ Google Sheets بدون مشاكل -->
+    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
+    <form id="gform" target="hidden_iframe" method="POST" action="" style="display:none;">
+        <input type="hidden" name="employee" id="form_employee">
+        <input type="hidden" name="type" id="form_type">
+        <input type="hidden" name="time" id="form_time">
+    </form>
+
     <script>
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/library/d/1YArXpo-7_0l2fsXoWGjOJ1NEf8sx4BTiDtOKzmOBGGeNd6BOBp0IoW48/12";
+    // ضعي رابط Google Apps Script الخاص بكِ هنا بين العلامتين " "
+    const GOOGLE_SCRIPT_URL = "ضع_الرابط_هنا";
     const ADMIN_PASSWORD = "1234";
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -74,97 +81,74 @@
         const inBtn = document.getElementById('inBtn');
         const outBtn = document.getElementById('outBtn');
         const logTable = document.getElementById('logTable');
+        const gform = document.getElementById('gform');
 
-        // إضافة موظفة جديدة
+        if (GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== "ضع_الرابط_هنا") {
+            gform.action = GOOGLE_SCRIPT_URL;
+        }
+
+        // إضافة موظفة
         addBtn.addEventListener('click', function() {
-            const pass = prompt('يرجى إدخال رمز المرور الخاص بالإدارة للإضافة:');
-            if (pass !== ADMIN_PASSWORD) {
-                if (pass !== null) alert('رمز المرور غير صحيح!');
-                return;
-            }
-
+            const pass = prompt('رمز الإدارة:');
+            if (pass !== ADMIN_PASSWORD) return alert('رمز خاطئ');
             const name = newEmpInput.value.trim();
-            if (!name) { 
-                alert('يرجى كتابة اسم الموظفة أولاً'); 
-                return; 
-            }
-            
+            if (!name) return alert('ادخلي الاسم');
             const option = document.createElement('option');
             option.value = name;
             option.textContent = name;
             empSelect.appendChild(option);
             empSelect.value = name;
             newEmpInput.value = '';
-            alert('تمت إضافة الموظفة: ' + name);
         });
 
         // حذف موظفة
         delBtn.addEventListener('click', function() {
             if (empSelect.options.length === 0) return;
-
-            const pass = prompt('يرجى إدخال رمز المرور الخاص بالإدارة للحذف:');
-            if (pass !== ADMIN_PASSWORD) {
-                if (pass !== null) alert('رمز المرور غير صحيح!');
-                return;
-            }
-
-            if (confirm('هل أنتِ متأكدة من حذف ' + empSelect.value + '؟')) {
-                empSelect.remove(empSelect.selectedIndex);
-            }
+            const pass = prompt('رمز الإدارة:');
+            if (pass !== ADMIN_PASSWORD) return alert('رمز خاطئ');
+            empSelect.remove(empSelect.selectedIndex);
         });
 
-        // إلغاء حظر تسجيل الموظفة لليوم
+        // إلغاء حظر التسجيل لليوم
         resetBtn.addEventListener('click', function() {
-            if (empSelect.options.length === 0 || !empSelect.value) return;
-
-            const pass = prompt('يرجى إدخال رمز المرور الخاص بالإدارة لإلغاء الحظر:');
-            if (pass !== ADMIN_PASSWORD) {
-                if (pass !== null) alert('رمز المرور غير صحيح!');
-                return;
-            }
-
-            const name = empSelect.value;
-            const today = new Date().toLocaleDateString('ar-SA');
-            
-            localStorage.removeItem('attendance_' + name + 'تسجيل دخول' + today);
-            localStorage.removeItem('attendance_' + name + 'تسجيل خروج' + today);
-
-            alert('تم إلغاء حظر التسجيل لليوم للموظفة (' + name + ') بنجاح!');
+            if (!empSelect.value) return;
+            const pass = prompt('رمز الإدارة:');
+            if (pass !== ADMIN_PASSWORD) return alert('رمز خاطئ');
+            const today = new Date().toLocaleDateString('en-CA');
+            localStorage.removeItem('att_' + empSelect.value + 'تسجيل دخول' + today);
+            localStorage.removeItem('att_' + empSelect.value + 'تسجيل خروج' + today);
+            alert('تم إلغاء الحظر للموظفة لليوم');
         });
 
-        // تسجيل الدخول أو الخروج
+        // معالجة تسجيل الحضور والانصراف
         function handleRegister(type) {
-            if (empSelect.options.length === 0 || !empSelect.value) {
-                alert('يرجى اختيار اسم الموظفة أولاً');
-                return;
-            }
-            
             const name = empSelect.value;
-            const today = new Date().toLocaleDateString('ar-SA');
-            
-            // صياغة الوقت والتاريخ الحالي بتوقيت الجهاز المحلي بشكل صريح (مثال: 2026/10/05 - 08:32 م)
-            const nowObj = new Date();
-            const dateStr = nowObj.toLocaleDateString('en-CA'); // YYYY-MM-DD
-            const timeStr = nowObj.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-            const fullDateTimeStr = dateStr + ' ' + timeStr;
+            if (!name) return alert('اختاري اسم الموظفة');
 
-            const recordKey = 'attendance_' + name + '' + type + '' + today;
+            const now = new Date();
+            const todayDate = now.toLocaleDateString('en-CA'); // YYYY-MM-DD
+            
+            // صياغة الوقت والتاريخ بشكل واضح ومباشر باللغة العربية
+            const dateFormatted = now.toLocaleDateString('ar-SA', { year: 'numeric', month: '2-digit', day: '2-digit' });
+            const timeFormatted = now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+            const fullDateTime = dateFormatted + ' - ' + timeFormatted;
+
+            const recordKey = 'att_' + name + '' + type + '' + todayDate;
 
             if (localStorage.getItem(recordKey)) {
-                alert('عذراً، الموظفة (' + name + ') قامت بعمل (' + type + ') اليوم بالفعل!');
-                return;
+                return alert('تم إجراء (' + type + ') للموظفة ' + name + ' اليوم بالفعل!');
+            }
+
+            // إرسال البيانات عبر النموذج الخفي لتفادي استبعاد الطلبات
+            document.getElementById('form_employee').value = name;
+            document.getElementById('form_type').value = type;
+            document.getElementById('form_time').value = fullDateTime;
+            
+            if (gform.action && gform.action !== window.location.href) {
+                gform.submit();
             }
 
             localStorage.setItem(recordKey, "true");
-
-            if (GOOGLE_SCRIPT_URL) {
-                fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ employee: name, type: type, time: fullDateTimeStr })
-                }).catch(function(err) { console.error(err); });
-            }
 
             if (logTable.rows[0] && logTable.rows[0].cells.length === 1) { 
                 logTable.innerHTML = ''; 
@@ -174,8 +158,7 @@
             const rowHtml = '<tr class="hover:bg-slate-700/30 transition border-b border-slate-700/50">' +
                 '<td class="py-3 font-bold text-white">' + name + '</td>' +
                 '<td class="py-3 font-semibold ' + rowClass + '">' + type + '</td>' +
-                '<td class="py-3 text-slate-300">' + fullDateTimeStr + '</td>' +
-                '<td class="py-3"><span class="bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-lg text-xs">تم الحفظ</span></td>' +
+                '<td class="py-3 text-slate-300">' + fullDateTime + '</td>' +
             '</tr>';
 
             logTable.innerHTML = rowHtml + logTable.innerHTML;
@@ -187,4 +170,4 @@
     });
     </script>
 </body>
-</html>
+</html
