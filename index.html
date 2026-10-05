@@ -59,8 +59,16 @@
         </div>
     </div>
 
+    <!-- نموذج مخفي لضمان الإرسال المباشر بدون مشاكل CORS -->
+    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
+    <form id="gform" target="hidden_iframe" method="POST" action="" style="display:none;">
+        <input type="hidden" name="employee" id="form_employee">
+        <input type="hidden" name="type" id="form_type">
+        <input type="hidden" name="time" id="form_time">
+    </form>
+
     <script>
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz2MCuNt1CSwjSU7BfYi8NIcf3FHabDRAoz4723MA-Ty6u_p7q_41snTNigT5psHEKd/exec";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzIGUneH9qQoYIW4FZdZgcn9iAQig3PbvzBpvxFjks85vBJ4wbVPaPo_pjlwQBFwAdJ/exec";
     const ADMIN_PASSWORD = "1234";
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -72,6 +80,7 @@
         const inBtn = document.getElementById('inBtn');
         const outBtn = document.getElementById('outBtn');
         const logTable = document.getElementById('logTable');
+        const gform = document.getElementById('gform');
 
         // إضافة موظفة
         addBtn.onclick = function() {
@@ -132,21 +141,19 @@
                 return alert('الموظفة (' + name + ') قامت بـ (' + type + ') اليوم بالفعل!');
             }
 
-            // صياغة الوقت والتاريخ بتوقيت السعودية المباشر
             const fullDateTime = now.toLocaleDateString('ar-SA') + ' - ' + now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
 
-            // حفظ الحالة محلياً
-            localStorage.setItem(recordKey, "true");
-
-            // إرسال البيانات لجدول قوقل
+            // الإرسال عبر النموذج الخفي لتجاوز حظر المتصفحات
+            document.getElementById('form_employee').value = name;
+            document.getElementById('form_type').value = type;
+            document.getElementById('form_time').value = fullDateTime;
+            
             if (GOOGLE_SCRIPT_URL) {
-                fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify({ employee: name, type: type, time: fullDateTime })
-                }).catch(function(e) { console.log(e); });
+                gform.action = GOOGLE_SCRIPT_URL;
+                gform.submit();
             }
+
+            localStorage.setItem(recordKey, "true");
 
             if (logTable.rows[0] && logTable.rows[0].cells.length === 1) {
                 logTable.innerHTML = '';
