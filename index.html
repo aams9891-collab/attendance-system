@@ -15,7 +15,7 @@
         <div class="mb-5 bg-slate-700/50 p-4 rounded-xl border border-slate-600">
             <label class="block text-slate-300 mb-2 font-bold text-sm">إدارة الموظفات (خاص بالإدارة):</label>
             <div class="flex gap-2 mb-3">
-                <input type="text" id="newEmpInput" placeholder="اكتبي اسم الموظفة..." class="flex-1 p-2.5 rounded-lg bg-slate-800 text-white border border-slate-600 text-sm text-right">
+                <input type="text" id="newEmpInput" placeholder="اكتبي اسم الموظفة..." class="flex-1 p-2.5 rounded-lg bg-slate-800 text-white border border-slate-600 text-sm">
                 <button type="button" id="addBtn" class="bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold px-4 py-2 rounded-lg text-sm">إضافة</button>
             </div>
 
@@ -59,16 +59,16 @@
         </div>
     </div>
 
-    <!-- نموذج مخفي لضمان الإرسال المباشر بدون مشاكل CORS -->
+    <!-- نموذج إرسال خفي بدون تعقيدات CORS -->
     <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
-    <form id="gform" target="hidden_iframe" method="POST" action="" style="display:none;">
+    <form id="gform" target="hidden_iframe" method="POST" style="display:none;">
         <input type="hidden" name="employee" id="form_employee">
         <input type="hidden" name="type" id="form_type">
         <input type="hidden" name="time" id="form_time">
     </form>
 
     <script>
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbybynxDuDW8FJ0CLupp38P-9RawjuZ5uMV2uGkuK2fISV03zLrHD9rrlH0QKc2KZL0j/exec";
+    const GOOGLE_SCRIPT_URL = "ضعي_الرابط_الجديد_هنا";
     const ADMIN_PASSWORD = "1234";
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -84,74 +84,59 @@
 
         // إضافة موظفة
         addBtn.onclick = function() {
-            const pass = prompt('رمز المرور بالإدارة:');
-            if (pass !== ADMIN_PASSWORD) {
-                if (pass !== null) alert('رمز المرور غير صحيح!');
-                return;
-            }
+            const pass = prompt('رمز الإدارة:');
+            if (pass !== ADMIN_PASSWORD) return alert('رمز خاطئ');
             const name = newEmpInput.value.trim();
-            if (!name) return alert('اكتبي اسم الموظفة أولاً');
+            if (!name) return alert('اكتبي اسم الموظفة');
             const opt = document.createElement('option');
             opt.value = name;
             opt.textContent = name;
             empSelect.appendChild(opt);
             empSelect.value = name;
             newEmpInput.value = '';
-            alert('تمت الإضافة: ' + name);
         };
 
         // حذف موظفة
         delBtn.onclick = function() {
             if (empSelect.options.length === 0) return;
-            const pass = prompt('رمز المرور بالإدارة:');
-            if (pass !== ADMIN_PASSWORD) {
-                if (pass !== null) alert('رمز المرور غير صحيح!');
-                return;
-            }
-            if (confirm('حذف الموظفة (' + empSelect.value + ')؟')) {
-                empSelect.remove(empSelect.selectedIndex);
-            }
+            const pass = prompt('رمز الإدارة:');
+            if (pass !== ADMIN_PASSWORD) return alert('رمز خاطئ');
+            empSelect.remove(empSelect.selectedIndex);
         };
 
         // إلغاء حظر التسجيل لليوم
         resetBtn.onclick = function() {
             if (!empSelect.value) return;
-            const pass = prompt('رمز المرور بالإدارة:');
-            if (pass !== ADMIN_PASSWORD) {
-                if (pass !== null) alert('رمز المرور غير صحيح!');
-                return;
-            }
-            const name = empSelect.value;
+            const pass = prompt('رمز الإدارة:');
+            if (pass !== ADMIN_PASSWORD) return alert('رمز خاطئ');
             const today = new Date().toISOString().slice(0, 10);
-            localStorage.removeItem('att_' + name + 'تسجيل دخول' + today);
-            localStorage.removeItem('att_' + name + 'تسجيل خروج' + today);
-            alert('تم إلغاء الحظر لـ (' + name + ') لليوم!');
+            localStorage.removeItem('att_' + empSelect.value + 'تسجيل دخول' + today);
+            localStorage.removeItem('att_' + empSelect.value + 'تسجيل خروج' + today);
+            alert('تم إلغاء الحظر للموظفة لليوم');
         };
 
         // تسجيل الحضور أو الانصراف
         function register(type) {
             const name = empSelect.value;
-            if (!name) return alert('اختاري الموظفة أولاً');
+            if (!name) return alert('اختاري اسم الموظفة أولاً');
 
             const now = new Date();
             const todayStr = now.toISOString().slice(0, 10);
             const recordKey = 'att_' + name + '' + type + '' + todayStr;
 
             if (localStorage.getItem(recordKey)) {
-                return alert('الموظفة (' + name + ') قامت بـ (' + type + ') اليوم بالفعل!');
+                return alert('تم إنجاز (' + type + ') للموظفة ' + name + ' اليوم بالفعل!');
             }
 
             const fullDateTime = now.toLocaleDateString('ar-SA') + ' - ' + now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
 
-            // الإرسال عبر النموذج الخفي لتجاوز حظر المتصفحات
+            // تعبئة النموذج وإرساله مباشرة
             document.getElementById('form_employee').value = name;
             document.getElementById('form_type').value = type;
             document.getElementById('form_time').value = fullDateTime;
-            
-            if (GOOGLE_SCRIPT_URL) {
-                gform.action = GOOGLE_SCRIPT_URL;
-                gform.submit();
-            }
+
+            gform.action = GOOGLE_SCRIPT_URL;
+            gform.submit();
 
             localStorage.setItem(recordKey, "true");
 
