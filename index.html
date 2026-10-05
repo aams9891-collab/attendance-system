@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام الحضور والانصراف - الصالون</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-white min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-slate-800 p-6 rounded-2xl shadow-xl w-full max-w-md border border-slate-700">
+        <h1 class="text-2xl font-bold text-center mb-6 text-amber-400">نظام الحضور والانصراف</h1>
+
+        <!-- إدارة الموظفات -->
+        <div class="mb-5 bg-slate-700/50 p-4 rounded-xl border border-slate-600">
+            <label class="block text-slate-300 mb-2 font-bold text-sm">إدارة الموظفات (خاص بالإدارة):</label>
+            <div class="flex gap-2 mb-3">
+                <input type="text" id="newEmpInput" placeholder="اكتبي اسم الموظفة..." class="flex-1 p-2.5 rounded-lg bg-slate-800 text-white border border-slate-600 text-sm focus:outline-none focus:border-amber-400">
+                <button type="button" id="addBtn" class="bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold px-4 py-2 rounded-lg text-sm transition">إضافة</button>
+            </div>
+
+            <!-- قائمة اختيار الموظفة مع زر الحذف وإعادة الضبط -->
+            <div class="flex gap-2">
+                <select id="empSelect" class="flex-1 p-2.5 rounded-lg bg-slate-800 text-white border border-slate-600 text-sm focus:outline-none focus:border-amber-400">
+                    <option value="سارة">سارة</option>
+                    <option value="نورة">نورة</option>
+                    <option value="أمل">أمل</option>
+                </select>
+                <button type="button" id="delBtn" class="bg-rose-600 hover:bg-rose-500 text-white font-semibold px-3 py-2 rounded-lg text-xs transition">حذف الاسم</button>
+                <button type="button" id="resetBtn" class="bg-amber-600 hover:bg-amber-500 text-white font-semibold px-3 py-2 rounded-lg text-xs transition" title="إلغاء حظر التسجيل للموظفة المختارة اليوم">إلغاء حظر التسجيل</button>
+            </div>
+        </div>
+
+        <!-- أزرار التسجيل -->
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <button type="button" id="inBtn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl transition shadow-lg active:scale-95">
+                تسجيل دخول
+            </button>
+            <button type="button" id="outBtn" class="bg-rose-600 hover:bg-rose-500 text-white font-bold py-3 rounded-xl transition shadow-lg active:scale-95">
+                تسجيل خروج
+            </button>
+        </div>
+
+        <!-- جدول السجلات -->
+        <div class="overflow-x-auto">
+            <table class="w-full text-right text-sm">
+                <thead>
+                    <tr class="text-slate-400 border-b border-slate-700">
+                        <th class="py-2">الموظفة</th>
+                        <th class="py-2">النوع</th>
+                        <th class="py-2">الوقت</th>
+                        <th class="py-2">الحالة</th>
+                    </tr>
+                </thead>
+                <tbody id="logTable">
+                    <tr>
+                        <td colspan="4" class="py-4 text-center text-slate-500">لا توجد سجلات اليوم</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyYBOe_5hh_1d-HnjrFUv5oGj3MTPUoZohqk84JVcBBNvrExuMOLZX1UhFW2ILrylSx/exec
+    const ADMIN_PASSWORD = "1234";
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const empSelect = document.getElementById('empSelect');
+        const newEmpInput = document.getElementById('newEmpInput');
+        const addBtn = document.getElementById('addBtn');
+        const delBtn = document.getElementById('delBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const inBtn = document.getElementById('inBtn');
+        const outBtn = document.getElementById('outBtn');
+        const logTable = document.getElementById('logTable');
+
+        // إضافة موظفة جديدة
+        addBtn.addEventListener('click', function() {
+            const pass = prompt('يرجى إدخال رمز المرور الخاص بالإدارة للإضافة:');
+            if (pass !== ADMIN_PASSWORD) {
+                if (pass !== null) alert('رمز المرور غير صحيح!');
+                return;
+            }
+
+            const name = newEmpInput.value.trim();
+            if (!name) { 
+                alert('يرجى كتابة اسم الموظفة أولاً'); 
+                return; 
+            }
+            
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = name;
+            empSelect.appendChild(option);
+            empSelect.value = name;
+            newEmpInput.value = '';
+            alert('تمت إضافة الموظفة: ' + name);
+        });
+
+        // حذف موظفة
+        delBtn.addEventListener('click', function() {
+            if (empSelect.options.length === 0) return;
+
+            const pass = prompt('يرجى إدخال رمز المرور الخاص بالإدارة للحذف:');
+            if (pass !== ADMIN_PASSWORD) {
+                if (pass !== null) alert('رمز المرور غير صحيح!');
+                return;
+            }
+
+            if (confirm('هل أنتِ متأكدة من حذف ' + empSelect.value + '؟')) {
+                empSelect.remove(empSelect.selectedIndex);
+            }
+        });
+
+        // زر إداري: إلغاء حظر تسجيل الموظفة لليوم الحالي فقط عند الخطأ
+        resetBtn.addEventListener('click', function() {
+            if (empSelect.options.length === 0 || !empSelect.value) return;
+
+            const pass = prompt('يرجى إدخال رمز المرور الخاص بالإدارة لإلغاء الحظر:');
+            if (pass !== ADMIN_PASSWORD) {
+                if (pass !== null) alert('رمز المرور غير صحيح!');
+                return;
+            }
+
+            const name = empSelect.value;
+            const today = new Date().toLocaleDateString('ar-SA');
+            
+            const inKey = 'attendance_' + name + 'تسجيل دخول' + today;
+            const outKey = 'attendance_' + name + 'تسجيل خروج' + today;
+
+            localStorage.removeItem(inKey);
+            localStorage.removeItem(outKey);
+
+            alert('تم إلغاء حظر التسجيل لليوم للموظفة (' + name + ') بنجاح. تستطيع الآن التسجيل من جديد!');
+        });
+
+        // عملية تسجيل الدخول أو الخروج
+        function handleRegister(type) {
+            if (empSelect.options.length === 0 || !empSelect.value) {
+                alert('يرجى اختيار اسم الموظفة أولاً');
+                return;
+            }
+            
+            const name = empSelect.value;
+            const today = new Date().toLocaleDateString('ar-SA');
+            const now = new Date().toLocaleString('ar-SA');
+
+            const recordKey = 'attendance_' + name + '' + type + '' + today;
+
+            if (localStorage.getItem(recordKey)) {
+                alert('عذراً، الموظفة (' + name + ') قامت بعمل (' + type + ') اليوم بالفعل!');
+                return;
+            }
+
+            localStorage.setItem(recordKey, "true");
+
+            if (GOOGLE_SCRIPT_URL) {
+                fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ employee: name, type: type, time: now })
+                }).catch(function(err) { console.error(err); });
+            }
+
+            if (logTable.rows[0] && logTable.rows[0].cells.length === 1) { 
+                logTable.innerHTML = ''; 
+            }
+
+            const rowClass = type === 'تسجيل دخول' ? 'text-emerald-400' : 'text-rose-400';
+            const rowHtml = '<tr class="hover:bg-slate-700/30 transition border-b border-slate-700/50">' +
+                '<td class="py-3 font-bold text-white">' + name + '</td>' +
+                '<td class="py-3 font-semibold ' + rowClass + '">' + type + '</td>' +
+                '<td class="py-3 text-slate-300">' + now + '</td>' +
+                '<td class="py-3"><span class="bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-lg text-xs">تم الحفظ</span></td>' +
+            '</tr>';
+
+            logTable.innerHTML = rowHtml + logTable.innerHTML;
+            alert('تم ' + type + ' لـ ' + name + ' بنجاح!');
+        }
+
+        inBtn.addEventListener('click', function() { handleRegister('تسجيل دخول'); });
+        outBtn.addEventListener('click', function() { handleRegister('تسجيل خروج'); });
+    });
+    </script>
+</body>
+</html>
