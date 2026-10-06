@@ -1,5 +1,53 @@
-<script>
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyl_4g0qEo_VhK0D4YhiGCtJ0yck0fNR1u1k3FgLi5jQtROpV48mlbksmFEjIlG2DBX/exec";    const ADMIN_PASS = "1234";
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام الحضور والانصراف</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-white min-h-screen p-4 flex flex-col items-center">
+    <div class="w-full max-w-md bg-slate-800 p-6 rounded-xl shadow-lg border border-slate-700">
+        <h1 class="text-2xl font-bold text-center mb-6 text-amber-400">نظام الحضور والانصراف</h1>
+        
+        <div class="mb-6 border-b border-slate-700 pb-4">
+            <label class="block text-sm font-medium mb-2">إدارة الموظفات (خاص بالإدارة):</label>
+            <div class="flex gap-2 mb-2">
+                <input type="text" id="newEmpInput" placeholder="اكتبي اسم الموظفة..." class="w-full p-2 rounded bg-slate-700 border border-slate-600 text-white text-sm">
+                <button id="addBtn" class="bg-amber-500 hover:bg-amber-600 px-4 py-2 rounded text-black font-bold text-sm">إضافة</button>
+            </div>
+            <div class="flex gap-2">
+                <select id="empSelect" class="w-full p-2 rounded bg-slate-700 border border-slate-600 text-white text-sm"></select>
+                <button id="delBtn" class="bg-rose-500 hover:bg-rose-600 px-3 py-2 rounded text-white text-sm">حذف</button>
+                <button id="resetBtn" class="bg-amber-600 hover:bg-amber-700 px-3 py-2 rounded text-white text-sm">إلغاء الحظر</button>
+            </div>
+        </div>
+
+        <div class="flex gap-4 mb-6">
+            <button id="inBtn" class="w-1/2 bg-emerald-500 hover:bg-emerald-600 py-3 rounded-lg font-bold text-lg">تسجيل دخول</button>
+            <button id="outBtn" class="w-1/2 bg-rose-500 hover:bg-rose-600 py-3 rounded-lg font-bold text-lg">تسجيل خروج</button>
+        </div>
+
+        <div>
+            <h2 class="font-bold mb-3 border-b border-slate-700 pb-1">السجل اليومي المحلي</h2>
+            <table class="w-full text-right text-sm">
+                <thead>
+                    <tr class="text-slate-400 border-b border-slate-700">
+                        <th class="pb-2">الموظفة</th>
+                        <th class="pb-2">النوع</th>
+                        <th class="pb-2">الوقت والتاريخ</th>
+                    </tr>
+                </thead>
+                <tbody id="logTable">
+                    <tr><td colspan="3" class="py-3 text-center text-slate-500">لا يوجد تسجيلات اليوم</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxVj-d0Y76P4IRUjskTyOsYInC7LWRqBpiPnMBEyzHd4eYQhvpsxLRH-9XJvnehs3TOnA/exec";
+    const ADMIN_PASS = "1234";
 
     document.addEventListener('DOMContentLoaded', function() {
         const empSelect = document.getElementById('empSelect');
@@ -57,8 +105,7 @@ const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyl_4g0qEo_Vh
             const timeStr = now.toLocaleDateString('ar-SA') + ' - ' + now.toLocaleTimeString('ar-SA');
             localStorage.setItem(recordKey, "true");
 
-            // إرسال عبر fetch لتجنب أخطاء 403 و echo
-            fetch(SCRIPT_URL, {
+            fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
                 mode: 'no-cors',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -77,3 +124,5 @@ const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyl_4g0qEo_Vh
         if (outBtn) outBtn.onclick = function() { register('تسجيل خروج'); };
     });
     </script>
+</body>
+</html>
