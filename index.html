@@ -174,7 +174,7 @@
             navigator.geolocation.getCurrentPosition(function(p) {
                 const dist = Math.round(distanceM(p.coords.latitude, p.coords.longitude, SALON.lat, SALON.lng));
                 if (dist > SALON.radius) {
-                    alert('أنتِ خارج نطاق الصالون (' + dist + ' متر). لا يمكن التسجيل.');
+                   alert('أنتِ خارج نطاق الصالون (' + dist + ' متر).\nموقع جوالك: ' + p.coords.latitude.toFixed(5) + ', ' + p.coords.longitude.toFixed(5) + '\nالدقة: ' + Math.round(p.coords.accuracy) + ' متر');
                     return;
                 }
                 registerNow(type, p.coords);
