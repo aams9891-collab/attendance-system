@@ -72,15 +72,15 @@
         }
 
         function loadEmployees() {
-            empSelect.innerHTML = '';
-            const savedEmps = JSON.parse(localStorage.getItem('salon_employees') || '["سارة", "عليا", "هنا"]');
-            savedEmps.forEach(name => {
-                const opt = document.createElement('option');
-                opt.value = name;
-                opt.textContent = name;
-                empSelect.appendChild(opt);
-            });
-        }
+    empSelect.innerHTML = '';
+    const savedEmps = JSON.parse(localStorage.getItem('salon_employees') || '[]');
+    savedEmps.forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = name;
+        empSelect.appendChild(opt);
+    });
+}
 
         function saveEmployeesList() {
             const emps = [];
