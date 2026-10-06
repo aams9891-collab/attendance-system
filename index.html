@@ -3,53 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام الحضور والانصراف بالموقع</title>
+    <title>نظام الحضور والانصراف - الصالون</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-900 text-white min-h-screen p-4 flex flex-col items-center">
-    <div class="w-full max-w-md bg-slate-800 p-6 rounded-xl shadow-lg border border-slate-700">
+<body class="bg-slate-900 text-white min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-slate-800 p-6 rounded-2xl shadow-xl w-full max-w-md border border-slate-700">
         <h1 class="text-2xl font-bold text-center mb-6 text-amber-400">نظام الحضور والانصراف</h1>
-        
-        <div class="mb-6 border-b border-slate-700 pb-4">
-            <label class="block text-sm font-medium mb-2">إدارة الموظفات:</label>
-            <div class="flex gap-2 mb-2">
-                <input type="text" id="newEmpInput" placeholder="اكتبي اسم الموظفة..." class="w-full p-2 rounded bg-slate-700 text-white text-sm">
-                <button id="addBtn" class="bg-amber-500 text-black font-bold px-4 py-2 rounded text-sm">إضافة</button>
+
+        <!-- إدارة الموظفات -->
+        <div class="mb-5 bg-slate-700/50 p-4 rounded-xl border border-slate-600">
+            <label class="block text-slate-300 mb-2 font-bold text-sm">إدارة الموظفات (خاص بالإدارة):</label>
+            <div class="flex gap-2 mb-3">
+                <input type="text" id="newEmpInput" placeholder="اكتبي اسم الموظفة..." class="flex-1 p-2.5 rounded-lg bg-slate-800 text-white border border-slate-600 text-sm focus:outline-none focus:border-amber-400">
+                <button type="button" id="addBtn" class="bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold px-4 py-2 rounded-lg text-sm transition">إضافة</button>
             </div>
+
             <div class="flex gap-2">
-                <select id="empSelect" class="w-full p-2 rounded bg-slate-700 text-white text-sm"></select>
-                <button id="delBtn" class="bg-rose-500 px-3 py-2 rounded text-white text-sm">حذف</button>
-                <button id="resetBtn" class="bg-amber-600 px-3 py-2 rounded text-white text-sm">إلغاء الحظر</button>
+                <select id="empSelect" class="flex-1 p-2.5 rounded-lg bg-slate-800 text-white border border-slate-600 text-sm focus:outline-none focus:border-amber-400">
+                    <option value="سارة">سارة</option>
+                    <option value="نورة">نورة</option>
+                    <option value="أمل">أمل</option>
+                </select>
+                <button type="button" id="delBtn" class="bg-rose-600 hover:bg-rose-500 text-white font-semibold px-3 py-2 rounded-lg text-xs transition">حذف الاسم</button>
+                <button type="button" id="resetBtn" class="bg-amber-600 hover:bg-amber-500 text-white font-semibold px-3 py-2 rounded-lg text-xs transition" title="إلغاء حظر التسجيل للموظفة المختارة اليوم">إلغاء حظر التسجيل</button>
             </div>
         </div>
 
-        <div class="flex gap-4 mb-6">
-            <button id="inBtn" class="w-1/2 bg-emerald-500 py-3 rounded-lg font-bold text-lg">تسجيل دخول</button>
-            <button id="outBtn" class="w-1/2 bg-rose-500 py-3 rounded-lg font-bold text-lg">تسجيل خروج</button>
+        <!-- أزرار التسجيل -->
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <button type="button" id="inBtn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl transition shadow-lg active:scale-95">
+                تسجيل دخول
+            </button>
+            <button type="button" id="outBtn" class="bg-rose-600 hover:bg-rose-500 text-white font-bold py-3 rounded-xl transition shadow-lg active:scale-95">
+                تسجيل خروج
+            </button>
         </div>
 
-        <div id="statusMsg" class="text-center my-2 text-sm text-amber-300 font-bold hidden"></div>
-
-        <div>
-            <h2 class="font-bold mb-3 border-b border-slate-700 pb-1">السجل اليومي المحلي</h2>
+        <!-- جدول السجلات -->
+        <div class="overflow-x-auto">
             <table class="w-full text-right text-sm">
                 <thead>
                     <tr class="text-slate-400 border-b border-slate-700">
-                        <th class="pb-2">الموظفة</th>
-                        <th class="pb-2">النوع</th>
-                        <th class="pb-2">الوقت والتاريخ</th>
+                        <th class="py-2">الموظفة</th>
+                        <th class="py-2">النوع</th>
+                        <th class="py-2">الوقت</th>
+                        <th class="py-2">الحالة</th>
                     </tr>
                 </thead>
                 <tbody id="logTable">
-                    <tr><td colspan="3" class="py-3 text-center text-slate-500">لا يوجد تسجيلات اليوم</td></tr>
+                    <tr>
+                        <td colspan="4" class="py-4 text-center text-slate-500">لا توجد سجلات اليوم</td>
+                    </tr>
                 </tbody>
             </table>
         </div>
     </div>
 
     <script>
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbysprjKnHV4x9UmfdctpgAi_AjPilYI4BXBNJzs136YmPty0hRvKjb26E9oPx--2Cbkvg/exec";
-    const ADMIN_PASS = "1234";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxVj-d0Y76P4IRUjskTyOsYInC7LWRqBpiPnMBEyzHd4eYQhvpsxLRH-9XJvnehs3TOnA/exec";
+    const ADMIN_PASSWORD = "1234";
+    const SALON = { lat: 27.4939060, lng: 41.6694612, radius: 150 };
+
+    function distanceM(a, b, c, d) {
+        const R = 6371000, rad = Math.PI / 180;
+        const dLat = (c - a) * rad, dLng = (d - b) * rad;
+        const h = Math.sin(dLat / 2) * 2 + Math.cos(a * rad) * Math.cos(c * rad) * Math.sin(dLng / 2) * 2;
+        return 2 * R * Math.asin(Math.sqrt(h));
+    }
 
     document.addEventListener('DOMContentLoaded', function() {
         const empSelect = document.getElementById('empSelect');
@@ -60,134 +81,131 @@
         const inBtn = document.getElementById('inBtn');
         const outBtn = document.getElementById('outBtn');
         const logTable = document.getElementById('logTable');
-        const statusMsg = document.getElementById('statusMsg');
 
-        function showStatus(text) {
-            statusMsg.textContent = text;
-            statusMsg.classList.remove('hidden');
-        }
-
-        function hideStatus() {
-            statusMsg.classList.add('hidden');
-        }
-
-        function loadEmployees() {
-    empSelect.innerHTML = '';
-    const savedEmps = JSON.parse(localStorage.getItem('salon_employees') || '[]');
-    savedEmps.forEach(name => {
-        const opt = document.createElement('option');
-        opt.value = name;
-        opt.textContent = name;
-        empSelect.appendChild(opt);
-    });
-}
-
-        function saveEmployeesList() {
-            const emps = [];
-            for (let i = 0; i < empSelect.options.length; i++) {
-                emps.push(empSelect.options[i].value);
+        addBtn.addEventListener('click', function() {
+            const pass = prompt('يرجى إدخال رمز المرور الخاص بالإدارة للإضافة:');
+            if (pass !== ADMIN_PASSWORD) {
+                if (pass !== null) alert('رمز المرور غير صحيح!');
+                return;
             }
-            localStorage.setItem('salon_employees', JSON.stringify(emps));
-        }
+            const name = newEmpInput.value.trim();
+            if (!name) {
+                alert('يرجى كتابة اسم الموظفة أولاً');
+                return;
+            }
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = name;
+            empSelect.appendChild(option);
+            empSelect.value = name;
+            newEmpInput.value = '';
+            alert('تمت إضافة الموظفة: ' + name);
+        });
 
-        loadEmployees();
-
-        if (addBtn) {
-            addBtn.onclick = function() {
-                if (prompt('رمز المرور الإداري:') !== ADMIN_PASS) return alert('رمز المرور غير صحيح!');
-                const name = newEmpInput.value.trim();
-                if (!name) return alert('يرجى كتابة اسم الموظفة');
-                
-                const opt = document.createElement('option');
-                opt.value = name; opt.textContent = name;
-                empSelect.appendChild(opt); 
-                empSelect.value = name;
-                newEmpInput.value = '';
-                saveEmployeesList();
-                alert('تم حفظ الموظفة بنجاح!');
-            };
-        }
-
-        if (delBtn) {
-            delBtn.onclick = function() {
-                if (empSelect.options.length === 0) return;
-                if (prompt('رمز المرور الإداري:') !== ADMIN_PASS) return alert('رمز المرور غير صحيح!');
+        delBtn.addEventListener('click', function() {
+            if (empSelect.options.length === 0) return;
+            const pass = prompt('يرجى إدخال رمز المرور الخاص بالإدارة للحذف:');
+            if (pass !== ADMIN_PASSWORD) {
+                if (pass !== null) alert('رمز المرور غير صحيح!');
+                return;
+            }
+            if (confirm('هل أنتِ متأكدة من حذف ' + empSelect.value + '؟')) {
                 empSelect.remove(empSelect.selectedIndex);
-                saveEmployeesList();
-                alert('تم حذف الموظفة!');
-            };
-        }
+            }
+        });
 
-        if (resetBtn) {
-            resetBtn.onclick = function() {
-                if (!empSelect.value) return;
-                if (prompt('رمز المرور الإداري:') !== ADMIN_PASS) return alert('رمز المرور غير صحيح!');
-                const today = new Date().toISOString().slice(0, 10);
-                localStorage.removeItem('att_' + empSelect.value + 'تسجيل دخول' + today);
-                localStorage.removeItem('att_' + empSelect.value + 'تسجيل خروج' + today);
-                alert('تم إلغاء الحظر!');
-            };
-        }
-
-        function register(type) {
+        resetBtn.addEventListener('click', function() {
+            if (empSelect.options.length === 0 || !empSelect.value) return;
+            const pass = prompt('يرجى إدخال رمز المرور الخاص بالإدارة لإلغاء الحظر:');
+            if (pass !== ADMIN_PASSWORD) {
+                if (pass !== null) alert('رمز المرور غير صحيح!');
+                return;
+            }
             const name = empSelect.value;
-            if (!name) return alert('اختاري الموظفة أولاً');
+            const today = new Date().toLocaleDateString('ar-SA');
+            localStorage.removeItem('attendance_' + name + 'تسجيل دخول' + today);
+            localStorage.removeItem('attendance_' + name + 'تسجيل خروج' + today);
+            alert('تم إلغاء حظر التسجيل لليوم للموظفة (' + name + ') بنجاح. تستطيع الآن التسجيل من جديد!');
+        });
 
-            const now = new Date();
-            const todayStr = now.toISOString().slice(0, 10);
-            const recordKey = 'att_' + name + '' + type + '' + todayStr;
+        function registerNow(type, pos) {
+            const name = empSelect.value;
+            const today = new Date().toLocaleDateString('ar-SA');
+            const now = new Date().toLocaleString('ar-SA');
+            const recordKey = 'attendance_' + name + type + today;
 
             if (localStorage.getItem(recordKey)) {
-                return alert('تم التسجيل اليوم بالفعل!');
+                alert('عذراً، الموظفة (' + name + ') قامت بعمل (' + type + ') اليوم بالفعل!');
+                return;
+            }
+            localStorage.setItem(recordKey, "true");
+
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({ action: 'log', key: 'ahmed2026', empId: '', name: name, type: type === 'تسجيل دخول' ? 'حضور' : 'انصراف', lat: pos.latitude, lng: pos.longitude })
+            }).catch(function(err) { console.error(err); });
+
+            if (logTable.rows[0] && logTable.rows[0].cells.length === 1) {
+                logTable.innerHTML = '';
             }
 
-            if (!navigator.geolocation) {
-                return alert('متصفحك لا يدعم تحديد الموقع الجغرافي');
-            }
-
-            showStatus('⏳ جاري تحديد الموقع...');
-
-            // خيارات سريعة جداً لتحديد موقع الجوال خلال ثوانٍ
-            const options = {
-                enableHighAccuracy: false,
-                timeout: 5000,
-                maximumAge: 60000
-            };
-
-            navigator.geolocation.getCurrentPosition(function(position) {
-                showStatus('⏳ جاري إرسال البيانات...');
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
-                const timeStr = now.toLocaleDateString('ar-SA') + ' - ' + now.toLocaleTimeString('ar-SA');
-
-                fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ employee: name, type: type, time: timeStr, lat: lat, lng: lng })
-                }).then(() => {
-                    hideStatus();
-                    localStorage.setItem(recordKey, "true");
-
-                    if (logTable && logTable.rows[0] && logTable.rows[0].cells.length === 1) logTable.innerHTML = '';
-                    const rowClass = type === 'تسجيل دخول' ? 'text-emerald-400' : 'text-rose-400';
-                    if (logTable) {
-                        logTable.innerHTML = '<tr class="border-b border-slate-700/50"><td class="py-3 font-bold text-white">' + name + '</td><td class="py-3 ' + rowClass + '">' + type + '</td><td class="py-3 text-slate-300">' + timeStr + '</td></tr>' + logTable.innerHTML;
-                    }
-                    alert('تم التسجيل وإرسال البيانات!');
-                }).catch(err => {
-                    hideStatus();
-                    alert('حدث خطأ أثناء الإرسال.');
-                });
-
-            }, function(error) {
-                hideStatus();
-                alert('فشل الحصول على الموقع الجغرافي، تأكدي من تفعيل الـ GPS في الجوال.');
-            }, options);
+            const rowClass = type === 'تسجيل دخول' ? 'text-emerald-400' : 'text-rose-400';
+            const rowHtml = '<tr class="hover:bg-slate-700/30 transition border-b border-slate-700/50">' +
+                '<td class="py-3 font-bold text-white">' + name + '</td>' +
+                '<td class="py-3 font-semibold ' + rowClass + '">' + type + '</td>' +
+                '<td class="py-3 text-slate-300">' + now + '</td>' +
+                '<td class="py-3"><span class="bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-lg text-xs">تم الحفظ</span></td>' +
+            '</tr>';
+            logTable.innerHTML = rowHtml + logTable.innerHTML;
+            alert('تم ' + type + ' لـ ' + name + ' بنجاح!');
         }
 
-        if (inBtn) inBtn.onclick = function() { register('تسجيل دخول'); };
-        if (outBtn) outBtn.onclick = function() { register('تسجيل خروج'); };
+        function registerNow(type, pos) {
+            if (empSelect.options.length === 0 || !empSelect.value) {
+                alert('يرجى اختيار اسم الموظفة أولاً');
+                return;
+            }
+            if (!navigator.geolocation) {
+                alert('المتصفح لا يدعم تحديد الموقع');
+                return;
+            }
+            navigator.geolocation.getCurrentPosition(function(p) {
+                const dist = Math.round(distanceM(p.coords.latitude, p.coords.longitude, SALON.lat, SALON.lng));
+                if (dist > SALON.radius) {
+                    alert('أنتِ خارج نطاق الصالون (' + dist + ' متر). لا يمكن التسجيل.');
+                    return;
+                }
+                registerNow(type, p.coords);
+            }, function() {
+                alert('فعّلي إذن الموقع للمتصفح ثم حاولي مرة أخرى');
+            }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+        }
+
+        const SALON = { lat: 27.4939060, lng: 41.6694612, radius: 150 };
+
+function distanceM(a, b, c, d) {
+    const R = 6371000, rad = Math.PI / 180;
+    const dLat = (c - a) * rad, dLng = (d - b) * rad;
+    const h = Math.sin(dLat / 2) * 2 + Math.cos(a * rad) * Math.cos(c * rad) * Math.sin(dLng / 2) * 2;
+    return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+function handleRegister(type) {
+    if (!navigator.geolocation) { alert('المتصفح لا يدعم تحديد الموقع'); return; }
+    navigator.geolocation.getCurrentPosition(function(p) {
+        const dist = Math.round(distanceM(p.coords.latitude, p.coords.longitude, SALON.lat, SALON.lng));
+        if (dist > SALON.radius) {
+            alert('أنتِ خارج نطاق الصالون (' + dist + ' متر). لا يمكن التسجيل.');
+            return;
+        }
+        registerNow(type, p.coords);
+    }, function() {
+        alert('فعّلي إذن الموقع للمتصفح ثم حاولي مرة أخرى');
+    }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+}
+        outBtn.addEventListener('click', function() { handleRegister('تسجيل خروج'); });
     });
     </script>
 </body>
