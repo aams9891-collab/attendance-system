@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام الحضور والانصراف</title>
+    <title>نظام الحضور والانصراف بالموقع</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-900 text-white min-h-screen p-4 flex flex-col items-center">
@@ -11,21 +11,21 @@
         <h1 class="text-2xl font-bold text-center mb-6 text-amber-400">نظام الحضور والانصراف</h1>
         
         <div class="mb-6 border-b border-slate-700 pb-4">
-            <label class="block text-sm font-medium mb-2">إدارة الموظفات (خاص بالإدارة):</label>
+            <label class="block text-sm font-medium mb-2">إدارة الموظفات:</label>
             <div class="flex gap-2 mb-2">
-                <input type="text" id="newEmpInput" placeholder="اكتبي اسم الموظفة..." class="w-full p-2 rounded bg-slate-700 border border-slate-600 text-white text-sm">
-                <button id="addBtn" class="bg-amber-500 hover:bg-amber-600 px-4 py-2 rounded text-black font-bold text-sm">إضافة</button>
+                <input type="text" id="newEmpInput" placeholder="اكتبي اسم الموظفة..." class="w-full p-2 rounded bg-slate-700 text-white text-sm">
+                <button id="addBtn" class="bg-amber-500 text-black font-bold px-4 py-2 rounded text-sm">إضافة</button>
             </div>
             <div class="flex gap-2">
-                <select id="empSelect" class="w-full p-2 rounded bg-slate-700 border border-slate-600 text-white text-sm"></select>
-                <button id="delBtn" class="bg-rose-500 hover:bg-rose-600 px-3 py-2 rounded text-white text-sm">حذف</button>
-                <button id="resetBtn" class="bg-amber-600 hover:bg-amber-700 px-3 py-2 rounded text-white text-sm">إلغاء الحظر</button>
+                <select id="empSelect" class="w-full p-2 rounded bg-slate-700 text-white text-sm"></select>
+                <button id="delBtn" class="bg-rose-500 px-3 py-2 rounded text-white text-sm">حذف</button>
+                <button id="resetBtn" class="bg-amber-600 px-3 py-2 rounded text-white text-sm">إلغاء الحظر</button>
             </div>
         </div>
 
         <div class="flex gap-4 mb-6">
-            <button id="inBtn" class="w-1/2 bg-emerald-500 hover:bg-emerald-600 py-3 rounded-lg font-bold text-lg">تسجيل دخول</button>
-            <button id="outBtn" class="w-1/2 bg-rose-500 hover:bg-rose-600 py-3 rounded-lg font-bold text-lg">تسجيل خروج</button>
+            <button id="inBtn" class="w-1/2 bg-emerald-500 py-3 rounded-lg font-bold text-lg">تسجيل دخول</button>
+            <button id="outBtn" class="w-1/2 bg-rose-500 py-3 rounded-lg font-bold text-lg">تسجيل خروج</button>
         </div>
 
         <div>
@@ -46,7 +46,7 @@
     </div>
 
     <script>
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxVj-d0Y76P4IRUjskTyOsYInC7LWRqBpiPnMBEyzHd4eYQhvpsxLRH-9XJvnehs3TOnA/exec";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbysprjKnHV4x9UmfdctpgAi_AjPilYI4BXBNJzs136YmPty0hRvKjb26E9oPx--2Cbkvg/exec";
     const ADMIN_PASS = "1234";
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -92,7 +92,7 @@
 
         function register(type) {
             const name = empSelect.value;
-            if (!name) return alert('اختاري الموظفة');
+            if (!name) return alert('اختاري الموظفة أولاً');
 
             const now = new Date();
             const todayStr = now.toISOString().slice(0, 10);
@@ -102,22 +102,35 @@
                 return alert('تم التسجيل اليوم بالفعل!');
             }
 
-            const timeStr = now.toLocaleDateString('ar-SA') + ' - ' + now.toLocaleTimeString('ar-SA');
-            localStorage.setItem(recordKey, "true");
-
-            fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ employee: name, type: type, time: timeStr })
-            });
-
-            if (logTable && logTable.rows[0] && logTable.rows[0].cells.length === 1) logTable.innerHTML = '';
-            const rowClass = type === 'تسجيل دخول' ? 'text-emerald-400' : 'text-rose-400';
-            if (logTable) {
-                logTable.innerHTML = '<tr class="border-b border-slate-700/50"><td class="py-3 font-bold text-white">' + name + '</td><td class="py-3 ' + rowClass + '">' + type + '</td><td class="py-3 text-slate-300">' + timeStr + '</td></tr>' + logTable.innerHTML;
+            if (!navigator.geolocation) {
+                return alert('متصفحك لا يدعم تحديد الموقع الجغرافي');
             }
-            alert('تم ' + type + ' بنجاح!');
+
+            alert('جاري التحقق من موقعك الجغرافي...');
+
+            navigator.geolocation.getCurrentPosition(function(position) {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                const timeStr = now.toLocaleDateString('ar-SA') + ' - ' + now.toLocaleTimeString('ar-SA');
+
+                fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ employee: name, type: type, time: timeStr, lat: lat, lng: lng })
+                });
+
+                localStorage.setItem(recordKey, "true");
+
+                if (logTable && logTable.rows[0] && logTable.rows[0].cells.length === 1) logTable.innerHTML = '';
+                const rowClass = type === 'تسجيل دخول' ? 'text-emerald-400' : 'text-rose-400';
+                if (logTable) {
+                    logTable.innerHTML = '<tr class="border-b border-slate-700/50"><td class="py-3 font-bold text-white">' + name + '</td><td class="py-3 ' + rowClass + '">' + type + '</td><td class="py-3 text-slate-300">' + timeStr + '</td></tr>' + logTable.innerHTML;
+                }
+                alert('تم إرسال الطلب بنجاح! إذا كنتِ داخل موقع الصالون سيتم تسجيل حضورك.');
+            }, function(error) {
+                alert('فشل الحصول على الموقع. يرجى تفعيل إذن الموقع الجغرافي (GPS) في جوالك.');
+            }, { enableHighAccuracy: true });
         }
 
         if (inBtn) inBtn.onclick = function() { register('تسجيل دخول'); };
